@@ -11,6 +11,6 @@ module.exports = {
   plugins: ['vue'],
   rules: {
     semi: 'off',
-    'linebreak-style': ['error', 'windows'],
+    'linebreak-style': ['off', 'windows'],
   },
 }
