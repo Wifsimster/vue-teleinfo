@@ -18,9 +18,10 @@
   },
   "homepage": "https://github.com/Wifsimster/vue-teleinfo#readme",
   "dependencies": {
-    "fastify": "^3.27.0",
-    "mongodb": "^4.3.1",
-    "vue": "^3.2.29"
+    "apexcharts": "^3.33.0",
+    "date-fns": "^2.28.0",
+    "vue": "^3.2.29",
+    "vue3-apexcharts": "^1.4.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.1.0",

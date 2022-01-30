@@ -13,4 +13,5 @@ module.exports = {
     semi: 'off',
     'linebreak-style': ['off', 'windows'],
   },
+  'max-len': 'off',
 }
