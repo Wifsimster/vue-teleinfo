@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { subMinutes, format } from 'date-fns'
+import { format } from 'date-fns'
 
 export default {
   data() {
@@ -22,7 +22,7 @@ export default {
           type: 'area',
           height: 350,
           zoom: {
-            enabled: false
+            autoScaleYaxis: true
           }
         },
         xaxis: {
@@ -40,7 +40,12 @@ export default {
         },
         labels: [],
         xaxis: {
-          type: 'datetime',
+          type: 'datetime'
+        },
+        tooltip: {
+          x: {
+            format: 'dd/MM/yyyy HH:mm:ss'
+          }
         },
         fill: {
           type: 'gradient',
@@ -53,7 +58,7 @@ export default {
         },
       },
       series: [{
-        name: 'Teleinfo',
+        name: 'Phase 3 (A)',
         data: [],
       }]
     }
@@ -67,7 +72,7 @@ export default {
     await this.refreshChart()
     setInterval(async () => {
       await this.refreshChart()
-    }, 10000)
+    }, 15000)
   },
   methods: {
     async getLinkyInfo() {
@@ -75,12 +80,25 @@ export default {
       return await response.json()
     },
     async getTeleinfo() {
-      const response = await fetch('http://localhost:3001/teleinfo?sort=createdAt&order=1&limit=6000')
+      const response = await fetch('http://localhost:3001/teleinfo?sort=createdAt&order=-1&limit=10000')
       let result = await response.json()
-      result = result.filter((i) => new Date(i.createdAt).getTime() >= subMinutes(new Date(), 10).getTime())
       
-      const labels = result.map((i) => format(new Date(i.createdAt), 'MM/dd/yyyy HH:mm:ss'))
-      const data = result.map((i) => i.instantaneousIntensity03.value * 230)
+      let previous03
+      let data = [], labels = []
+
+      // Keep only different values
+      for(let i in result) {
+        let obj = result[i]
+        if(obj.instantaneousIntensity03.value !== previous03) {
+          if(result[i - 1]) {
+            data.push(result[i - 1].instantaneousIntensity03.value)
+            labels.push(format(new Date(result[i - 1].createdAt), 'MM/dd/yyyy HH:mm:ss'))
+          }          
+          data.push(obj.instantaneousIntensity03.value)
+          labels.push(format(new Date(obj.createdAt), 'MM/dd/yyyy HH:mm:ss'))
+        }
+        previous03 = obj.instantaneousIntensity03.value
+      }
 
       return { labels, data }
     },
