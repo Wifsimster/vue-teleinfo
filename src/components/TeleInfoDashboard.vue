@@ -1,7 +1,11 @@
 <template>  
   <div v-if="linky">
     <div class="text-3xl font-bold">Linky <span class="text-base">{{ linky.serialNumber }}</span></div>
-    <div><span class="font-semibold">Index</span> {{ linky.index.value }}{{ linky.index.unit }}</div>
+    <div class="flex gap-4 justify-center">
+      <div><span class="font-semibold">Index</span> {{ linky.index.value }}{{ linky.index.unit }}</div>
+      <div><span class="font-semibold">Intensité souscrite</span> {{ linky.subscribedIntensity.value }}{{ linky.subscribedIntensity.unit }}</div>
+      <div><span class="font-semibold">Puissance max</span> {{ linky.maximumPower.value }}{{ linky.maximumPower.unit }}</div>
+    </div>      
   </div>
 
   <div class="shadow-lg rounded-lg overflow-hidden">
@@ -10,6 +14,7 @@
 </template>
 
 <script>
+import config from '../../config'
 import { format } from 'date-fns'
 
 export default {
@@ -47,18 +52,9 @@ export default {
             format: 'dd/MM/yyyy HH:mm:ss'
           }
         },
-        fill: {
-          type: 'gradient',
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.7,
-            opacityTo: 0.9,
-            stops: [0, 100]
-          }
-        },
       },
       series: [{
-        name: 'Phase 3 (A)',
+        name: 'Puissance apparente (VA)',
         data: [],
       }]
     }
@@ -72,15 +68,15 @@ export default {
     await this.refreshChart()
     setInterval(async () => {
       await this.refreshChart()
-    }, 15000)
+    }, 30000)
   },
   methods: {
     async getLinkyInfo() {
-      const response = await fetch('http://localhost:3001/linky')
+      const response = await fetch(`http://${config.host}:${config.port}/linky`)
       return await response.json()
     },
     async getTeleinfo() {
-      const response = await fetch('http://localhost:3001/teleinfo?sort=createdAt&order=-1&limit=10000')
+      const response = await fetch(`http://${config.host}:${config.port}/teleinfo?sort=createdAt&order=-1&limit=500`)
       let result = await response.json()
       
       let previous03
@@ -89,15 +85,15 @@ export default {
       // Keep only different values
       for(let i in result) {
         let obj = result[i]
-        if(obj.instantaneousIntensity03.value !== previous03) {
+        if(obj.apparentPower.value !== previous03) {
           if(result[i - 1]) {
-            data.push(result[i - 1].instantaneousIntensity03.value)
+            data.push(result[i - 1].apparentPower.value)
             labels.push(format(new Date(result[i - 1].createdAt), 'MM/dd/yyyy HH:mm:ss'))
           }          
-          data.push(obj.instantaneousIntensity03.value)
+          data.push(obj.apparentPower.value)
           labels.push(format(new Date(obj.createdAt), 'MM/dd/yyyy HH:mm:ss'))
         }
-        previous03 = obj.instantaneousIntensity03.value
+        previous03 = obj.apparentPower.value
       }
 
       return { labels, data }
