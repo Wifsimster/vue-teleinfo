@@ -20,6 +20,7 @@
   "dependencies": {
     "apexcharts": "^3.33.0",
     "date-fns": "^2.28.0",
+    "date-fns-timezone": "^0.1.4",
     "vue": "^3.2.29",
     "vue3-apexcharts": "^1.4.1"
   },

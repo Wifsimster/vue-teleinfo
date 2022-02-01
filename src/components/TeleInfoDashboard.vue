@@ -5,6 +5,12 @@
       <div><span class="font-semibold">Index</span> {{ linky.index.value }}{{ linky.index.unit }}</div>
       <div><span class="font-semibold">Intensité souscrite</span> {{ linky.subscribedIntensity.value }}{{ linky.subscribedIntensity.unit }}</div>
       <div><span class="font-semibold">Puissance max</span> {{ linky.maximumPower.value }}{{ linky.maximumPower.unit }}</div>
+      <div>
+        <span class="font-semibold">Nb données</span> 
+        <select v-model="limit">
+          <option v-for="option in limits" :value="option">{{ option }}</option>
+        </select>
+      </div>
     </div>      
   </div>
 
@@ -16,10 +22,13 @@
 <script>
 import config from '../../config'
 import { format } from 'date-fns'
+import fr from "apexcharts/dist/locales/fr.json"
 
 export default {
   data() {
     return {
+      limits: [1000, 2000, 3000, 4000, 5000, 7500, 10000, 20000],
+      limit: 2000,
       linky: null,
       options: {    
         chart: {
@@ -28,7 +37,9 @@ export default {
           height: 350,
           zoom: {
             autoScaleYaxis: true
-          }
+          },
+          locales: [fr],
+          defaultLocale: 'fr',
         },
         xaxis: {
           categories: []
@@ -45,7 +56,10 @@ export default {
         },
         labels: [],
         xaxis: {
-          type: 'datetime'
+          type: 'datetime',
+          labels: {
+            datetimeUTC: false
+          }
         },
         tooltip: {
           x: {
@@ -70,13 +84,18 @@ export default {
       await this.refreshChart()
     }, 30000)
   },
+  watch: {
+    limit() {
+      this.refreshChart()
+    }
+  },
   methods: {
     async getLinkyInfo() {
       const response = await fetch(`http://${config.host}:${config.port}/linky`)
       return await response.json()
     },
     async getTeleinfo() {
-      const response = await fetch(`http://${config.host}:${config.port}/teleinfo?sort=createdAt&order=-1&limit=500`)
+      const response = await fetch(`http://${config.host}:${config.port}/teleinfo?sort=createdAt&order=-1&limit=${this.limit}`)
       let result = await response.json()
       
       let previous03
