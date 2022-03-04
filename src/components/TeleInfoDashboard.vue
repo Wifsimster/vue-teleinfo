@@ -16,6 +16,7 @@
 
   <div class="shadow-lg rounded-lg overflow-hidden">
     <apexchart type="area" height="350" :options="options" :series="series" />
+    <apexchart type="area" height="350" :options="options" :series="series2" />
   </div>
 </template>
 
@@ -70,7 +71,8 @@ export default {
       series: [{
         name: 'Puissance apparente (VA)',
         data: [],
-      }]
+      }],
+      series2: []
     }
   },
   async mounted() {
@@ -99,28 +101,46 @@ export default {
       let result = await response.json()
       
       let previous03
-      let data = [], labels = []
+      let data = [], labels = [], instantaneousIntensity01 = [], instantaneousIntensity02 = [], instantaneousIntensity03 = []
 
       // Keep only different values
       for(let i in result) {
         let obj = result[i]
         if(obj.apparentPower.value !== previous03) {
           if(result[i - 1]) {
+            instantaneousIntensity01.push(result[i - 1].instantaneousIntensity01.value)
+            instantaneousIntensity02.push(result[i - 1].instantaneousIntensity02.value)
+            instantaneousIntensity03.push(result[i - 1].instantaneousIntensity03.value)
             data.push(result[i - 1].apparentPower.value)
             labels.push(format(new Date(result[i - 1].createdAt), 'MM/dd/yyyy HH:mm:ss'))
           }          
+          instantaneousIntensity01.push(obj.instantaneousIntensity01.value)
+          instantaneousIntensity02.push(obj.instantaneousIntensity02.value)
+          instantaneousIntensity03.push(obj.instantaneousIntensity03.value)         
           data.push(obj.apparentPower.value)
           labels.push(format(new Date(obj.createdAt), 'MM/dd/yyyy HH:mm:ss'))
         }
         previous03 = obj.apparentPower.value
       }
 
-      return { labels, data }
+      return { labels, data, instantaneousIntensity01, instantaneousIntensity02, instantaneousIntensity03 }
     },
     async refreshChart() {
       let result = await this.getTeleinfo()
       this.options = { labels: result.labels }
       this.series = [{ data: result.data }]
+      this.series2 = [{
+        name: 'Intensité instantanée 01 (A)',
+        data: result.instantaneousIntensity01,
+      },
+      {
+        name: 'Intensité instantanée 02 (A)',
+        data: result.instantaneousIntensity02,
+      },
+      {
+        name: 'Intensité instantanée 03 (A)',
+        data: result.instantaneousIntensity03,
+      }]
     }
   }
 }
