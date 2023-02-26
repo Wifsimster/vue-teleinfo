@@ -1,6 +1,6 @@
 # vue-teleinfo :fr:
 
-Teleinfo frontend written in Vue.js
+Teleinfo est un frontend écrit en Vue.js.
 
 ## Description
 
